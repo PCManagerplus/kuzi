@@ -26,17 +26,10 @@
             font-size: 2em;
             color: green;
         }
-        .centered {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 100vh;
-        }
     </style>
 </head>
 <body>
-    <div class="container centered">
+    <div class="container">
         <h1>設定付きくじ引き・抽選アプリ</h1>
         <button id="settingsButton" class="btn">設定</button>
         <div id="settings" class="card-panel">
@@ -59,11 +52,11 @@
                     <option value="large">大</option>
                     <option value="custom">カスタム</option>
                 </select>
-                <label for="textSize">テキストサイズ</label>
+                <label for="textSize">結果のテキストサイズ</label>
             </div>
-            <div class="input-field" id="customSizeField" style="display: none;">
-                <input type="number" id="customSize" value="32">
-                <label for="customSize">カスタムサイズ（px）</label>
+            <div class="input-field" id="customTextSizeField" style="display: none;">
+                <input type="number" id="customTextSize" value="2">
+                <label for="customTextSize">カスタムサイズ（em）</label>
             </div>
             <button id="saveSettingsButton" class="btn">設定を保存</button>
         </div>
@@ -76,8 +69,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             M.updateTextFields();  // Materialize CSSのラベルを更新
-            const elems = document.querySelectorAll('select');
-            M.FormSelect.init(elems);
+            M.FormSelect.init(document.querySelectorAll('select'));
         });
 
         document.getElementById('settingsButton').addEventListener('click', function() {
@@ -86,8 +78,8 @@
         });
 
         document.getElementById('textSize').addEventListener('change', function() {
-            const customSizeField = document.getElementById('customSizeField');
-            customSizeField.style.display = this.value === 'custom' ? 'block' : 'none';
+            const customTextSizeField = document.getElementById('customTextSizeField');
+            customTextSizeField.style.display = this.value === 'custom' ? 'block' : 'none';
         });
 
         document.getElementById('saveSettingsButton').addEventListener('click', function() {
@@ -95,13 +87,35 @@
             const max = parseInt(document.getElementById('max').value);
             const delay = parseInt(document.getElementById('delay').value);
             const textSize = document.getElementById('textSize').value;
-            const customSize = parseInt(document.getElementById('customSize').value);
+            const customTextSize = parseFloat(document.getElementById('customTextSize').value);
 
-            if (isNaN(min) || isNaN(max) || min > max || isNaN(delay) || delay < 0 || (textSize === 'custom' && (isNaN(customSize) || customSize <= 0))) {
-                M.toast({html: '有効な範囲と時間、およびサイズを入力してください'});
+            if (isNaN(min) || isNaN(max) || min > max || isNaN(delay) || delay < 0) {
+                M.toast({html: '有効な範囲と時間を入力してください'});
                 return;
             }
 
+            if (textSize === 'custom' && (isNaN(customTextSize) || customTextSize <= 0)) {
+                M.toast({html: '有効なカスタムサイズを入力してください'});
+                return;
+            }
+
+            let resultFontSize;
+            switch (textSize) {
+                case 'small':
+                    resultFontSize = '1em';
+                    break;
+                case 'medium':
+                    resultFontSize = '2em';
+                    break;
+                case 'large':
+                    resultFontSize = '3em';
+                    break;
+                case 'custom':
+                    resultFontSize = customTextSize + 'em';
+                    break;
+            }
+
+            document.getElementById('result').style.fontSize = resultFontSize;
             M.toast({html: '設定が保存されました'});
             document.getElementById('settings').style.display = 'none';
         });
@@ -110,34 +124,13 @@
             const min = parseInt(document.getElementById('min').value);
             const max = parseInt(document.getElementById('max').value);
             const delay = parseInt(document.getElementById('delay').value) * 1000;
-            const textSize = document.getElementById('textSize').value;
-            const customSize = parseInt(document.getElementById('customSize').value);
-            let fontSize;
 
-            switch (textSize) {
-                case 'small':
-                    fontSize = '16px';
-                    break;
-                case 'medium':
-                    fontSize = '32px';
-                    break;
-                case 'large':
-                    fontSize = '48px';
-                    break;
-                case 'custom':
-                    fontSize = customSize + 'px';
-                    break;
-                default:
-                    fontSize = '32px';
-            }
-
-            if (isNaN(min) || isNaN(max) || min > max || isNaN(delay) || delay < 0 || (textSize === 'custom' && (isNaN(customSize) || customSize <= 0))) {
-                M.toast({html: '有効な範囲と時間、およびサイズを入力してください'});
+            if (isNaN(min) || isNaN(max) || min > max || isNaN(delay) || delay < 0) {
+                M.toast({html: '有効な範囲と時間を入力してください'});
                 return;
             }
 
             document.getElementById('result').textContent = "抽選中...";
-            document.getElementById('result').style.fontSize = fontSize;
 
             setTimeout(function() {
                 const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
