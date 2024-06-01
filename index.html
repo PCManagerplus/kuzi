@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定付きくじ引き・抽選アプリ</title>
+    <!-- Materialize CSSの読み込み -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'N-R';
+            src: url('N-R.ttc') format('truetype');
+        }
+        body {
+            font-family: 'N-R', Arial, sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            text-align: center;
+        }
+        #settings {
+            display: none;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 2em;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>設定付きくじ引き・抽選アプリ</h1>
+        <button id="settingsButton" class="btn">設定</button>
+        <div id="settings" class="card-panel">
+            <div class="input-field">
+                <input type="number" id="min" value="1">
+                <label for="min">最小値</label>
+            </div>
+            <div class="input-field">
+                <input type="number" id="max" value="100">
+                <label for="max">最大値</label>
+            </div>
+            <div class="input-field">
+                <input type="number" id="delay" value="3">
+                <label for="delay">結果発表までの時間（秒）</label>
+            </div>
+            <button id="saveSettingsButton" class="btn">設定を保存</button>
+        </div>
+        <button id="drawButton" class="btn">くじを引く</button>
+        <div id="result"></div>
+    </div>
+
+    <!-- Materialize JavaScriptの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            M.updateTextFields();  // Materialize CSSのラベルを更新
+        });
+
+        document.getElementById('settingsButton').addEventListener('click', function() {
+            const settingsDiv = document.getElementById('settings');
+            settingsDiv.style.display = settingsDiv.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.getElementById('saveSettingsButton').addEventListener('click', function() {
+            const min = parseInt(document.getElementById('min').value);
+            const max = parseInt(document.getElementById('max').value);
+            const delay = parseInt(document.getElementById('delay').value);
+
+            if (isNaN(min) || isNaN(max) || min > max || isNaN(delay) || delay < 0) {
+                M.toast({html: '有効な範囲と時間を入力してください'});
+                return;
+            }
+
+            M.toast({html: '設定が保存されました'});
+            document.getElementById('settings').style.display = 'none';
+        });
+
+        document.getElementById('drawButton').addEventListener('click', function() {
+            const min = parseInt(document.getElementById('min').value);
+            const max = parseInt(document.getElementById('max').value);
+            const delay = parseInt(document.getElementById('delay').value) * 1000;
+
+            if (isNaN(min) || isNaN(max) || min > max || isNaN(delay) || delay < 0) {
+                M.toast({html: '有効な範囲と時間を入力してください'});
+                return;
+            }
+
+            document.getElementById('result').textContent = "抽選中...";
+
+            setTimeout(function() {
+                const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+                document.getElementById('result').textContent = "結果: " + randomNum;
+            }, delay);
+        });
+    </script>
+</body>
+</html>
